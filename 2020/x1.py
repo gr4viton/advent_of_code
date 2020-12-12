@@ -1,5 +1,5 @@
-from aocd import data
 from aocd.models import Puzzle
+from aocd import numbers as in_numbers
 
 from dataclasses import dataclass
 
@@ -24,17 +24,33 @@ class PuzzleFactory:
 # # <Puzzle(2017, 20) at 0x107322978 - Particle Swarm>
 # puzzle.input_data
 
-# class SolverX1:
+class SolverX1:
 
-def aaa():
-    """
+    def main(self, in_numbers):
+        """
 
-    Specifically, they need you to find the two entries that sum to 2020 and then multiply those two numbers together.
-    """
+        Specifically, they need you to find the two entries that sum to 2020 and then multiply those two numbers together.
+        """
+        print("start")
+        print(f"count of numbers = {len(in_numbers)}")
+        in = in_numbers
+
+        max_ = 2001
+        in = list(filter(viable, set(in)))
+
+
+    @staticmethod
+    def viable(num):
+        if num > 2001:
+            return False
+        return True
+
+    def print(self):
+        print(f"count of numbers = {len(self.in)}")
+        p
 
 def main(puzzle):
-    print("start")
-    pass
+    # __import__('pudb').set_trace()
 
 
 if __name__ == "__main__":
