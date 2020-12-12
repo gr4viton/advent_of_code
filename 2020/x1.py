@@ -1,5 +1,5 @@
 from aocd import data
-from aocd import Puzzle
+from aocd.models import Puzzle
 
 from dataclasses import dataclass
 
@@ -25,13 +25,25 @@ class PuzzleFactory:
 # puzzle.input_data
 
 # class SolverX1:
+
+def aaa():
+    """
+
+    Specifically, they need you to find the two entries that sum to 2020 and then multiply those two numbers together.
+    """
+
 def main(puzzle):
     print("start")
     pass
 
 
 if __name__ == "__main__":
+    """Load session.
+
+    viz https://pypi.org/project/advent-of-code-data/
+    and session: https://github.com/wimglenn/advent-of-code-wim/issues/1
+    """
 
     puzzle = None
-    # puzzle = PuzzleFactory(2020, 1).get_puzzle()
+    puzzle = PuzzleFactory(2020, 1).get_puzzle()
     main(puzzle)
