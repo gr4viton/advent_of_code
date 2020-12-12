@@ -25,6 +25,7 @@ class PuzzleFactory:
 # puzzle.input_data
 
 class SolverX1:
+    year = 2020
 
     def main(self, in_numbers):
         """
@@ -32,25 +33,42 @@ class SolverX1:
         Specifically, they need you to find the two entries that sum to 2020 and then multiply those two numbers together.
         """
         print("start")
-        print(f"count of numbers = {len(in_numbers)}")
-        in = in_numbers
+        nums = in_numbers
+
+        self.print(nums)
 
         max_ = 2001
-        in = list(filter(viable, set(in)))
+        nums = sorted(list(filter(self.viable, set(nums))))
+        self.print(nums)
 
+        subtracted_year = [self.year - x for x in nums]
+        self.print(subtracted_year)
+        subtracted_year = list(filter(self.viable, subtracted_year))
+        self.print(subtracted_year)
+
+        num_2020 = list(set(nums) & set(subtracted_year))
+        self.print(num_2020)
+
+        assert len(num_2020) == 2
+
+        mult = num_2020[0] * num_2020[1]
+        print(f"mult {mult}")
+        return mult
+
+    def get_solution(self, in_numbers):
+        return self.main(in_numbers)
 
     @staticmethod
-    def viable(num):
-        if num > 2001:
+    def viable(nums):
+        if nums > 2001:
+            return False
+        if nums <= 0:
             return False
         return True
 
-    def print(self):
-        print(f"count of numbers = {len(self.in)}")
-        p
-
-def main(puzzle):
-    # __import__('pudb').set_trace()
+    def print(self, nums):
+        print(f"count of numbers = {len(nums)}")
+        print(nums)
 
 
 if __name__ == "__main__":
@@ -62,4 +80,4 @@ if __name__ == "__main__":
 
     puzzle = None
     puzzle = PuzzleFactory(2020, 1).get_puzzle()
-    main(puzzle)
+    x = SolverX1().get_solution(in_numbers)
