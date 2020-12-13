@@ -40,8 +40,9 @@ class SolverX1:
         year = self.year
         print("start")
 
-        pair = self._get_viable_list(nums, year)
+        pair = self.get_pair_which_sums_to_x(nums, year)
         assert pair is not None
+        assert len(pair) == 2
 
         mult = pair[0] * pair[1]
         print(f"mult {mult}")
