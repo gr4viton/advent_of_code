@@ -135,4 +135,3 @@ if __name__ == "__main__":
     print(">>>>>>>>>")
     print(f"solution 1 {x}")
     print(f"solution 2 {y}")
-
