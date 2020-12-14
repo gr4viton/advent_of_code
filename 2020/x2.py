@@ -19,6 +19,7 @@ class Directive(BaseModel):
     letter: str
     min_: int
     max_: int
+
     @classmethod
     def from_words(cls, count_word: str, letter_word: str):
         assert len(letter_word) == 2
@@ -29,11 +30,28 @@ class Directive(BaseModel):
         return cls(letter=letter, min_=min_, max_=max_)
 
     def check_correctness(self, password):
+        raise NotImplementedError()
+
+
+class DirectiveD2A(Directive):
+    def check_correctness(self, password):
         orig = len(password)
         without_letter = len(password.replace(self.letter, ""))
         letter_count = orig - without_letter
         return self.min_ <= letter_count <= self.max_
 
+
+class DirectiveD2B(Directive):
+
+    def _contains_letter(self, index, password):
+        return bool(password[index-1])
+
+    def check_correctness(self, password):
+        """
+        Each policy actually describes two positions in the password, where 1 means the first character, 2 means the second character, and so on. (Be careful; Toboggan Corporate Policies have no concept of "index zero"!) Exactly one of these positions must contain the given letter. Other occurrences of the letter are irrelevant for the purposes of policy enforcement.
+        """
+        # xor :)
+        return self._contains_letter(self.min_, password) != self._contains_letter(self.max_, password)
 
 @dataclass
 class Line:
@@ -46,7 +64,7 @@ class Line:
         return all(dire.check_correctness(self.password) for dire in self.directives)
 
     @classmethod
-    def from_line(cls, line):
+    def from_line(cls, line, directive_cls=DirectiveD2A):
 
         words = line.split(" ")
         pwd = words.pop(-1)
@@ -57,7 +75,7 @@ class Line:
             if is_count_word:
                 count_word = word
             else:
-                dire = Directive.from_words(count_word=count_word, letter_word=word)
+                dire = directive_cls.from_words(count_word=count_word, letter_word=word)
                 directives.append(dire)
 
         return cls(line=line, password=pwd, directives=directives)
@@ -69,11 +87,11 @@ class SolverX2:
 
     def solve1(self, in_):
         lines = [Line.from_line(line) for line in in_]
-        __import__('pudb').set_trace()
         return sum(line.is_correct for line in lines)
 
     def solve2(self, in_):
-        pass
+        lines = [Line.from_line(line, directive_cls=DirectiveD2B) for line in in_]
+        return sum(line.is_correct for line in lines)
 
     def print(self, in_):
         if not in_:
@@ -88,10 +106,13 @@ class SolverX2:
 1-3 b: cdefg
 2-9 c: ccccccccc
 """.splitlines()
-        x1 = self.solve1(lin1)
-        print(x1)
-        assert x1 == 2
+        self.test_it(self.solve1, lin1, 2)
+        self.test_it(self.solve2, lin1, 1)
 
+    def test_it(self, method, lins, out):
+        got_out = method(lins)
+        print(f"should: {out} | got: {got_out}")
+        assert got_out == out
 
 
 if __name__ == "__main__":
@@ -108,7 +129,7 @@ if __name__ == "__main__":
     in_ = lines
     a = b = None
     a = solver.solve1(in_)
-    # b = solver.solve2(in_)
+    b = solver.solve2(in_)
     print(">>>>>>>>>")
     print(f"solution 1 | {a}")
     print(f"solution 2 | {b}")
