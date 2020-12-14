@@ -10,10 +10,12 @@ class SolverD2:
     print_in_ = False
 
     def solve_a(self, in_):
-        pass
+        out = 69
+        return out
 
     def solve_b(self, in_):
-        pass
+        out = 42
+        return out
 
     def print(self, in_):
         if not in_:
@@ -25,11 +27,11 @@ class SolverD2:
     def test(self):
         print("> test")
         lin1 = ""
-        self.test_it(self.solve_a, lin1, 2)
-        self.test_it(self.solve_b, lin1, 1)
+        self.test_it(self.solve_a, 2, lin1)
+        self.test_it(self.solve_b, 1, lin1)
 
-    def test_it(self, method, lins, out):
-        got_out = method(lins)
+    def test_it(self, method, out, *args, **kwargs):
+        got_out = method(*args, **kwargs)
         print(f"should: {out} | got: {got_out}")
         assert got_out == out
 
