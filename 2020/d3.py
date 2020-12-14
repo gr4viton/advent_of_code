@@ -42,16 +42,16 @@ class Map:
     def get_passed_terrain(self, slope):
         """
 
-            x = (x + slope.x) % cols
-            0123401234
-            x
-               x
-             x    x
-                x    x
-            slope.x = 3
-            0 = (0+3) % 5 = 3
-            3 = (3+3) % 5 = 1
-            1 = (1+3) % 5 = 4
+        x = (x + slope.x) % cols
+        0123401234
+        x
+           x
+         x    x
+            x    x
+        slope.x = 3
+        0 = (0+3) % 5 = 3
+        3 = (3+3) % 5 = 1
+        1 = (1+3) % 5 = 4
         """
         cols = self.df.shape[1]
         print(f"cols={cols}")
@@ -68,16 +68,29 @@ class Map:
 class SolverD3:
     year = 2020
     print_in_ = False
+    def __init__(self, slops=None):
+        self.slops = slops
 
     def solve_a(self, in_):
-        map = Map.from_lines(in_)
+        map_ = Map.from_lines(in_)
         x, y = 3, 1
         slope = Slope.from_right_down(x, y)
-        tree_count = map.get_tree_count(slope)
+        tree_count = map_.get_tree_count(slope)
         return tree_count
 
-    def solve_b(self, in_):
-        pass
+    def solve_b(self, in_, slops=None):
+        """
+        slops = list of lists [x,y]
+        """
+        if slops is None:
+            slops = self.slops
+        map_ = Map.from_lines(in_)
+        slopes = [Slope.from_right_down(x, y) for x, y in slops]
+        mult = 1
+        for slope in slopes:
+            tree_count = map_.get_tree_count(slope)
+            mult *= tree_count
+        return mult
 
     def print(self, in_):
         if not in_:
@@ -100,15 +113,16 @@ class SolverD3:
 #...##....#
 .#..#...#.#"""
         lin1 = lin1.splitlines()
-        lin1 = ["".join([lin, lin]) for lin in lin1]
-        self.test_it(self.solve_a, lin1, 7)
-        self.test_it(self.solve_b, lin1, None)
+        lin2 = ["".join([lin, lin]) for lin in lin1]
+        self.test_it(self.solve_a, 7, lin1)
+        self.test_it(self.solve_a, 7, lin2)
+        self.test_it(self.solve_b, 336, lin1, self.slops)
+        self.test_it(self.solve_b, 336, lin2, self.slops)
 
-    def test_it(self, method, lins, out):
-        got_out = method(lins)
+    def test_it(self, method, out, *args, **kwargs):
+        got_out = method(*args, **kwargs)
         print(f"should: {out} | got: {got_out}")
         assert got_out == out
-
 
 
 if __name__ == "__main__":
@@ -123,7 +137,9 @@ if __name__ == "__main__":
 
     puzzle = None
     puzzle = PuzzleFactory(2020, DAY).get_puzzle()
-    solver = SolverD3()
+
+    slops = [[1, 1], [3, 1], [5, 1], [7, 1], [1, 2]]
+    solver = SolverD3(slops=slops)
 
     in_ = lines
 
