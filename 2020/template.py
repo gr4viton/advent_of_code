@@ -1,33 +1,38 @@
-from aocd.models import Puzzle
+from puzzle_factory import PuzzleFactory
 from aocd import lines
 
-from dataclasses import dataclass
+from typing import List
+from pydantic import BaseModel
 
-@dataclass
-class PuzzleFactory:
-    year: int
-    day: int
 
-    def get_puzzle(self):
-        puzzle = Puzzle(year=self.year, day=self.day)
-        return puzzle
-
-class SolverX2:
+class SolverD2:
     year = 2020
-    print_nums = False
+    print_in_ = False
 
-    def solve1(self, nums):
+    def solve_a(self, in_):
         pass
 
-    def solve2(self, nums):
+    def solve_b(self, in_):
         pass
 
-    def print(self, nums):
-        if not nums:
+    def print(self, in_):
+        if not in_:
             return
-        print(f"count of numbers = {len(nums)}")
-        if self.print_nums:
-            print(nums)
+        print(f"count of numbers = {len(in_)}")
+        if self.print_in_:
+            print(in_)
+
+    def test(self):
+        print("> test")
+        lin1 = ""
+        self.test_it(self.solve_a, lin1, 2)
+        self.test_it(self.solve_b, lin1, 1)
+
+    def test_it(self, method, lins, out):
+        got_out = method(lins)
+        print(f"should: {out} | got: {got_out}")
+        assert got_out == out
+
 
 
 if __name__ == "__main__":
@@ -36,13 +41,16 @@ if __name__ == "__main__":
     viz https://pypi.org/project/advent-of-code-data/
     and session: https://github.com/wimglenn/advent-of-code-wim/issues/1
     """
+    DAY = None  # TODO change
 
     puzzle = None
-    puzzle = PuzzleFactory(2020, 2).get_puzzle()
-    solver = SolverX2()
+    puzzle = PuzzleFactory(2020, DAY).get_puzzle()
+    solver = SolverD2()
+
     in_ = lines
-    a = solver.solve1(in_)
-    b = solver.solve2(in_)
+    a = solver.solve_a(in_)
+    b = solver.solve_b(in_)
+
     print(">>>>>>>>>")
     print(f"solution 1 {a}")
     print(f"solution 2 {b}")

@@ -1,18 +1,8 @@
-from aocd.models import Puzzle
+from puzzle_factory import PuzzleFactory
 from aocd import lines
 
-from dataclasses import dataclass
 from typing import List
 from pydantic import BaseModel
-
-@dataclass
-class PuzzleFactory:
-    year: int
-    day: int
-
-    def get_puzzle(self):
-        puzzle = Puzzle(year=self.year, day=self.day)
-        return puzzle
 
 
 class Directive(BaseModel):
@@ -54,8 +44,7 @@ class DirectiveD2B(Directive):
         return self._contains_letter(self.min_, password) != self._contains_letter(self.max_, password)
 
 
-@dataclass
-class Line:
+class Line(BaseModel):
     line: str
     password: str
     directives: List[Directive]
