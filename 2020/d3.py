@@ -52,12 +52,22 @@ class Map:
         0 = (0+3) % 5 = 3
         3 = (3+3) % 5 = 1
         1 = (1+3) % 5 = 4
+
+        # row skipping
+        slope.y = 2
+        0   = 0 % 2 = 0 zb 0 = f
+        1 s = 1 % 2 = 0 zb 1 = t
+        2   = 2 % 2 = 1 zb 0 = f
+        3 s = 3 % 2 = 1 zb 1 = t
         """
         cols = self.df.shape[1]
         print(f"cols={cols}")
         x = 0
         points = []
         for i, row in self.df.iterrows():
+            skip_the_row = i % slope.y
+            if skip_the_row:
+                continue
             point = row[x]
             points.append(point)
             x = (x + slope.x) % cols
