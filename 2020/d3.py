@@ -2,12 +2,13 @@ from puzzle_factory import PuzzleFactory
 from aocd import lines
 
 import pandas as pd
+from dataclasses import dataclass
 
 from typing import List
 from pydantic import BaseModel
 
 
-class Slope:
+class Slope(BaseModel):
     x: int
     y: int
 
@@ -16,6 +17,7 @@ class Slope:
         return cls(x=right, y=down)
 
 
+@dataclass
 class Map:
     df: pd.DataFrame
 
@@ -38,13 +40,29 @@ class Map:
         return tree_count
 
     def get_passed_terrain(self, slope):
-        rows = self.shape[0]
-        cols = self.shape[1]
+        """
+
+            x = (x + slope.x) % cols
+            0123401234
+            x
+               x
+             x    x
+                x    x
+            slope.x = 3
+            0 = (0+3) % 5 = 3
+            3 = (3+3) % 5 = 1
+            1 = (1+3) % 5 = 4
+        """
+        cols = self.df.shape[1]
+        print(f"cols={cols}")
         x = 0
-        for row in rows:
-            self.df[row][x]
-            x += slope.x % cols
-        pass
+        points = []
+        for i, row in self.df.iterrows():
+            point = row[x]
+            points.append(point)
+            x = (x + slope.x) % cols
+
+        return points
 
 
 class SolverD3:
@@ -70,9 +88,21 @@ class SolverD3:
 
     def test(self):
         print("> test")
-        lin1 = ""
-        self.test_it(self.solve_a, lin1, 2)
-        self.test_it(self.solve_b, lin1, 1)
+        lin1 = """..##.......
+#...#...#..
+.#....#..#.
+..#.#...#.#
+.#...##..#.
+..#.##.....
+.#.#.#....#
+.#........#
+#.##...#...
+#...##....#
+.#..#...#.#"""
+        lin1 = lin1.splitlines()
+        lin1 = ["".join([lin, lin]) for lin in lin1]
+        self.test_it(self.solve_a, lin1, 7)
+        self.test_it(self.solve_b, lin1, None)
 
     def test_it(self, method, lins, out):
         got_out = method(lins)
@@ -97,6 +127,7 @@ if __name__ == "__main__":
 
     in_ = lines
 
+    solver.test()
     a = solver.solve_a(in_)
     b = solver.solve_b(in_)
 
