@@ -44,7 +44,7 @@ class DirectiveD2A(Directive):
 class DirectiveD2B(Directive):
 
     def _contains_letter(self, index, password):
-        return bool(password[index-1])
+        return password[index-1] == self.letter
 
     def check_correctness(self, password):
         """
@@ -52,6 +52,7 @@ class DirectiveD2B(Directive):
         """
         # xor :)
         return self._contains_letter(self.min_, password) != self._contains_letter(self.max_, password)
+
 
 @dataclass
 class Line:
