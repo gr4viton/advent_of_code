@@ -32,7 +32,7 @@ class Directive(BaseModel):
         orig = len(password)
         without_letter = len(password.replace(self.letter, ""))
         letter_count = orig - without_letter
-        return self.min_ < letter_count < self.max_
+        return self.min_ <= letter_count <= self.max_
 
 
 @dataclass
@@ -69,6 +69,7 @@ class SolverX2:
 
     def solve1(self, in_):
         lines = [Line.from_line(line) for line in in_]
+        __import__('pudb').set_trace()
         return sum(line.is_correct for line in lines)
 
     def solve2(self, in_):
@@ -81,6 +82,17 @@ class SolverX2:
         if self.print_nums:
             print(in_)
 
+    def test(self):
+        print("> test")
+        lin1 = """1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc
+""".splitlines()
+        x1 = self.solve1(lin1)
+        print(x1)
+        assert x1 == 2
+
+
 
 if __name__ == "__main__":
     """Load session.
@@ -92,6 +104,7 @@ if __name__ == "__main__":
     puzzle = None
     puzzle = PuzzleFactory(2020, 2).get_puzzle()
     solver = SolverX2()
+    solver.test()
     in_ = lines
     a = b = None
     a = solver.solve1(in_)
