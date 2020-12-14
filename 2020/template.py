@@ -41,8 +41,8 @@ if __name__ == "__main__":
     puzzle = PuzzleFactory(2020, 2).get_puzzle()
     solver = SolverX2()
     in_ = lines
-    x = solver.solve1(in_)
-    y = solver.solve2(in_)
+    a = solver.solve1(in_)
+    b = solver.solve2(in_)
     print(">>>>>>>>>")
-    print(f"solution 1 {x}")
-    print(f"solution 2 {y}")
+    print(f"solution 1 {a}")
+    print(f"solution 2 {b}")
