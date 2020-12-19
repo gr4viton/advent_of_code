@@ -10,11 +10,11 @@ class SolverD2:
     print_in_ = False
 
     def solve_a(self, in_):
-        out = 69
+        out = None
         return out
 
     def solve_b(self, in_):
-        out = 42
+        out = None
         return out
 
     def print(self, in_):
@@ -32,6 +32,9 @@ class SolverD2:
 
     def test_it(self, method, out, *args, **kwargs):
         got_out = method(*args, **kwargs)
+        if got_out is None:
+            print("got None in test - skipping")
+            return
         print(f"should: {out} | got: {got_out}")
         assert got_out == out
 
