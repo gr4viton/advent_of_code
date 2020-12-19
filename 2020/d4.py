@@ -1,8 +1,10 @@
+from enum import Enum, auto
+from typing import List, Optional, ClassVar
+
 from puzzle_factory import PuzzleFactory
 from aocd import data, lines
 
-from typing import List, Optional, ClassVar
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, validator, Field, constr
 from pydantic.dataclasses import dataclass
 
 
@@ -28,10 +30,13 @@ class PassportBase:
                 continue
             code, value = word.split(":")
             dic[code] = value
+        return cls.from_code_dict(dic)
 
+    @classmethod
+    def from_code_dict(cls, code_dict):
         kwargs = {
             cls.code_to_field[code]: value
-            for code, value in dic.items()
+            for code, value in code_dict.items()
             if code in cls.code_to_field
         }
         return cls(**kwargs)
@@ -40,13 +45,6 @@ class PassportBase:
     def from_lines(cls, lines):
         words = lines.replace("\n", " ").split(" ")
         return cls.from_words(words)
-
-    @classmethod
-    def create_valid_from_lines(cls, lines):
-        try:
-            return cls.from_lines(lines)
-        except Exception:
-            return None
 
 
 class PassportA(PassportBase, BaseModel):
@@ -61,21 +59,40 @@ class PassportA(PassportBase, BaseModel):
 
 
 class Height(BaseModel):
-    value: int
+    quantity: int
     unit: str
-    _unit_ranges: ClassVar = {"cm": [150,193], "in":[59,76]}
+    _range_per_unit: ClassVar = {"cm": [150,193], "in":[59,76]}
 
-    @validator("unit")
-    def validate_unit(cls, unit):
-        if len(unit) != 2:
-            return False
-        if unit not in cls._unit_ranges.keys():
-            return False
-        unit_range = cls._unit_ranges["unit"]
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+        yield cls.unit_and_quantity_validator
+
+    @classmethod
+    def unit_and_quantity_validator(cls, value):
+        if value.unit not in cls._range_per_unit.keys():
+            raise ValueError(f"unit has to be one of {cls._range_per_unit.keys()}")
+        unit_range = cls._range_per_unit[value.unit]
         min_, max_ = unit_range
-        if not (min_  <= unit <= max_):
-            return False
-        return True
+        if not (min_  <= value.quantity <= max_):
+            raise ValueError(f"quantity [{value.quantity}] is not in selected unit [{value.unit}] range [{min_} : {max_}]")
+
+    @classmethod
+    def from_str(cls, txt):
+        txt = txt.strip()
+        quantity = txt[:-2]
+        unit = txt[-2:]
+        return cls(quantity=quantity, unit=unit)
+
+
+class EyeColor(str, Enum):
+    amb = "amb"
+    blu = "blu"
+    brn = "brn"
+    gry = "gry"
+    grn = "grn"
+    hzl = "hzl"
+    oth = "oth"
 
 
 class PassportB(PassportBase, BaseModel):
@@ -97,22 +114,21 @@ class PassportB(PassportBase, BaseModel):
     issue_year: int = Field(type=int, ge=2010, le=2020)
     expiry_year: int = Field(type=int, ge=2020, le=2030)
     height: Height
-    hair_color: str
-    eye_color: str
-    passport_id: str
+    hair_color: constr(regex=r'^#(?:[0-9a-f]{6})$')
+    eye_color: EyeColor
+    passport_id: constr(regex=r'^(?:[0-9]{9})$')
     country_id: Optional[str]
 
-    @validator("birth_year")
-    def is_birth_year(cls, v):
-        return 1920 < v < 2002
-
-    @validator("issue_year")
-    def is_issue_year(cls, v):
-        return 2010 < v < 2020
-
-    @validator("expiry_year")
-    def is_expiry_year(cls, v):
-        return 2020 < v < 2030
+    @classmethod
+    def from_code_dict(cls, code_dict):
+        kwargs = {
+            cls.code_to_field[code]: value
+            for code, value in code_dict.items()
+            if code in cls.code_to_field
+        }
+        key = "height"
+        kwargs[key] = dict(Height.from_str(kwargs[key]))
+        return cls(**kwargs)
 
 
 class SolverD4:
@@ -121,8 +137,18 @@ class SolverD4:
 
     def create_valid_passports(self, data, passport_cls=PassportA):
         lines_of_passports = data.split("\n\n")
-        passports = [passport_cls.create_valid_from_lines(lines) for lines in lines_of_passports]
-        passports = [pas for pas in passports if pas is not None]
+
+        passports = []
+        for lines in lines_of_passports:
+            try:
+                passport = passport_cls.from_lines(lines)
+            except Exception as exc:
+                # print(exc)  # debug
+                continue
+            if not passport:
+                continue
+            passports.append(passport)
+
         return passports
 
     def solve_a(self, in_):
@@ -213,12 +239,12 @@ if __name__ == "__main__":
     puzzle = PuzzleFactory(2020, DAY).get_puzzle()
     solver = SolverD4()
 
-
+    a = b = None
     in_ = data
     a = solver.solve_a(in_)
     b = solver.solve_b(in_)
 
     print(">>>>>>>>>")
-    print(f"solution 1 {a}")
-    print(f"solution 2 {b}")
+    print(f"solution 1 | {a}")
+    print(f"solution 2 | {b}")
     solver.test()

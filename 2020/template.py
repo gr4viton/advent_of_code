@@ -1,5 +1,5 @@
 from puzzle_factory import PuzzleFactory
-from aocd import lines
+from aocd import lines, data, numbers
 
 from typing import List
 from pydantic import BaseModel
@@ -52,10 +52,16 @@ if __name__ == "__main__":
     puzzle = PuzzleFactory(2020, DAY).get_puzzle()
     solver = SolverD2()
 
+    a = b = None
+
+    in_ = data
+    in_ = numbers
     in_ = lines
     a = solver.solve_a(in_)
     b = solver.solve_b(in_)
 
     print(">>>>>>>>>")
-    print(f"solution 1 {a}")
-    print(f"solution 2 {b}")
+    print(f"solution 1 | {a}")
+    print(f"solution 2 | {b}")
+
+    solver.test()
