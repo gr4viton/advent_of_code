@@ -7,13 +7,27 @@ from pydantic.dataclasses import dataclass
 
 
 class Passport(BaseModel):
-    birth_year: Optional[str]
-    issue_year: Optional[str]
-    expiry_year: Optional[str]
-    height: Optional[str]
-    hair_color: Optional[str]
-    eye_color: Optional[str]
-    passport_id: Optional[str]
+    """
+
+    byr (Birth Year) - four digits; at least 1920 and at most 2002.
+    iyr (Issue Year) - four digits; at least 2010 and at most 2020.
+    eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
+    hgt (Height) - a number followed by either cm or in:
+        If cm, the number must be at least 150 and at most 193.
+        If in, the number must be at least 59 and at most 76.
+    hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
+    ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
+    pid (Passport ID) - a nine-digit number, including leading zeroes.
+    cid (Country ID) - ignored, missing or not.
+
+    """
+    birth_year: str
+    issue_year: str
+    expiry_year: str
+    height: str
+    hair_color: str
+    eye_color: str
+    passport_id: str
     country_id: Optional[str]
 
     code_to_field: ClassVar[dict] = {
@@ -26,17 +40,6 @@ class Passport(BaseModel):
         "pid": "passport_id",
         "cid": "country_id",
     }
-
-    @property
-    def is_valid(self):
-        """Is this passport considered valid.
-
-        Consider it valid if `country_id` is missing
-        """
-        checked_dict = dict(self)
-        checked_dict.pop("country_id")
-        all_checked_values_defined = all(value is not None for value in checked_dict.values())
-        return all_checked_values_defined
 
     @classmethod
     def from_words(cls, words):
@@ -60,18 +63,28 @@ class Passport(BaseModel):
         words = lines.replace("\n", " ").split(" ")
         return cls.from_words(words)
 
+    @classmethod
+    def create_valid_from_lines(cls, lines):
+        try:
+            return cls.from_lines(lines)
+        except Exception:
+            return None
+
+
 
 class SolverD4:
     year = 2020
     print_in_ = False
 
-    def create_passports(self, data):
+    def create_valid_passports(self, data):
         lines_of_passports = data.split("\n\n")
-        return [Passport.from_lines(lines) for lines in lines_of_passports]
+        passports = [Passport.create_valid_from_lines(lines) for lines in lines_of_passports]
+        passports = [pas for pas in passports if pas is not None]
+        return passports
 
     def solve_a(self, in_):
-        passports = self.create_passports(data=in_)
-        valid_count = sum(pas.is_valid for pas in passports)
+        passports = self.create_valid_passports(data=in_)
+        valid_count = len(passports)
         out = valid_count
         return out
 
