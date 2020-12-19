@@ -6,30 +6,7 @@ from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
 
-class Passport(BaseModel):
-    """
-
-    byr (Birth Year) - four digits; at least 1920 and at most 2002.
-    iyr (Issue Year) - four digits; at least 2010 and at most 2020.
-    eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
-    hgt (Height) - a number followed by either cm or in:
-        If cm, the number must be at least 150 and at most 193.
-        If in, the number must be at least 59 and at most 76.
-    hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
-    ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
-    pid (Passport ID) - a nine-digit number, including leading zeroes.
-    cid (Country ID) - ignored, missing or not.
-
-    """
-    birth_year: str
-    issue_year: str
-    expiry_year: str
-    height: str
-    hair_color: str
-    eye_color: str
-    passport_id: str
-    country_id: Optional[str]
-
+class PassportBase:
     code_to_field: ClassVar[dict] = {
         "byr": "birth_year",
         "iyr": "issue_year",
@@ -71,14 +48,54 @@ class Passport(BaseModel):
             return None
 
 
+class PassportA(PassportBase, BaseModel):
+    birth_year: str
+    issue_year: str
+    expiry_year: str
+    height: str
+    hair_color: str
+    eye_color: str
+    passport_id: str
+    country_id: Optional[str]
+
+
+class YearRange(BaseModel):
+    year: int
+
+
+class PassportB(PassportBase, BaseModel):
+    """
+
+    byr (Birth Year) - four digits; at least 1920 and at most 2002.
+    iyr (Issue Year) - four digits; at least 2010 and at most 2020.
+    eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
+    hgt (Height) - a number followed by either cm or in:
+        If cm, the number must be at least 150 and at most 193.
+        If in, the number must be at least 59 and at most 76.
+    hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
+    ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
+    pid (Passport ID) - a nine-digit number, including leading zeroes.
+    cid (Country ID) - ignored, missing or not.
+
+    """
+    birth_year: str
+    issue_year: str
+    expiry_year: str
+    height: str
+    hair_color: str
+    eye_color: str
+    passport_id: str
+    country_id: Optional[str]
+
+
 
 class SolverD4:
     year = 2020
     print_in_ = False
 
-    def create_valid_passports(self, data):
+    def create_valid_passports(self, data, passport_cls=PassportA):
         lines_of_passports = data.split("\n\n")
-        passports = [Passport.create_valid_from_lines(lines) for lines in lines_of_passports]
+        passports = [passport_cls.create_valid_from_lines(lines) for lines in lines_of_passports]
         passports = [pas for pas in passports if pas is not None]
         return passports
 
@@ -116,6 +133,7 @@ hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in
 """
         self.test_it(self.solve_a, 2, lin1)
+        self.test_it(self.solve_a, 254, data)
         self.test_it(self.solve_b, 1, lin1)
 
     def test_it(self, method, out, *args, **kwargs):
