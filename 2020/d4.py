@@ -2,7 +2,7 @@ from puzzle_factory import PuzzleFactory
 from aocd import data, lines
 
 from typing import List, Optional, ClassVar
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 from pydantic.dataclasses import dataclass
 
 
@@ -77,22 +77,6 @@ class Height(BaseModel):
             return False
         return True
 
-class YearInt(int):
-    _min = 1980
-    _max = 2020
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, year):
-        if not isinstance(year, int):
-            raise TypeError('int required')
-        in_range = cls._min <= year <= cls._max
-        if not in_range:
-            raise ValueError('year not in range')
-
 
 class PassportB(PassportBase, BaseModel):
     """
@@ -109,9 +93,9 @@ class PassportB(PassportBase, BaseModel):
     cid (Country ID) - ignored, missing or not.
 
     """
-    birth_year: int
-    issue_year: int
-    expiry_year: int
+    birth_year: int = Field(type=int, ge=1920, le=2002)
+    issue_year: int = Field(type=int, ge=2010, le=2020)
+    expiry_year: int = Field(type=int, ge=2020, le=2030)
     height: Height
     hair_color: str
     eye_color: str
