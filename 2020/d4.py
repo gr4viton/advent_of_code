@@ -2,11 +2,12 @@ from puzzle_factory import PuzzleFactory
 from aocd import data, lines
 
 from typing import List, Optional, ClassVar
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from pydantic.dataclasses import dataclass
 
 
 class PassportBase:
+
     code_to_field: ClassVar[dict] = {
         "byr": "birth_year",
         "iyr": "issue_year",
@@ -59,8 +60,38 @@ class PassportA(PassportBase, BaseModel):
     country_id: Optional[str]
 
 
-class YearRange(BaseModel):
-    year: int
+class Height(BaseModel):
+    value: int
+    unit: str
+    _unit_ranges: ClassVar = {"cm": [150,193], "in":[59,76]}
+
+    @validator("unit")
+    def validate_unit(cls, unit):
+        if len(unit) != 2:
+            return False
+        if unit not in cls._unit_ranges.keys():
+            return False
+        unit_range = cls._unit_ranges["unit"]
+        min_, max_ = unit_range
+        if not (min_  <= unit <= max_):
+            return False
+        return True
+
+class YearInt(int):
+    _min = 1980
+    _max = 2020
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, year):
+        if not isinstance(year, int):
+            raise TypeError('int required')
+        in_range = cls._min <= year <= cls._max
+        if not in_range:
+            raise ValueError('year not in range')
 
 
 class PassportB(PassportBase, BaseModel):
@@ -78,15 +109,26 @@ class PassportB(PassportBase, BaseModel):
     cid (Country ID) - ignored, missing or not.
 
     """
-    birth_year: str
-    issue_year: str
-    expiry_year: str
-    height: str
+    birth_year: int
+    issue_year: int
+    expiry_year: int
+    height: Height
     hair_color: str
     eye_color: str
     passport_id: str
     country_id: Optional[str]
 
+    @validator("birth_year")
+    def is_birth_year(cls, v):
+        return 1920 < v < 2002
+
+    @validator("issue_year")
+    def is_issue_year(cls, v):
+        return 2010 < v < 2020
+
+    @validator("expiry_year")
+    def is_expiry_year(cls, v):
+        return 2020 < v < 2030
 
 
 class SolverD4:
@@ -106,7 +148,9 @@ class SolverD4:
         return out
 
     def solve_b(self, in_):
-        out = None
+        passports = self.create_valid_passports(data=in_, passport_cls=PassportB)
+        valid_count = len(passports)
+        out = valid_count
         return out
 
     def print(self, in_):
@@ -132,9 +176,37 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in
 """
+        b_inv = """
+eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007"""
+        b_val = """pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"""
+
         self.test_it(self.solve_a, 2, lin1)
         self.test_it(self.solve_a, 254, data)
-        self.test_it(self.solve_b, 1, lin1)
+        self.test_it(self.solve_b, 0, b_inv)
+        self.test_it(self.solve_b, 4, b_val)
 
     def test_it(self, method, out, *args, **kwargs):
         got_out = method(*args, **kwargs)
@@ -157,7 +229,6 @@ if __name__ == "__main__":
     puzzle = PuzzleFactory(2020, DAY).get_puzzle()
     solver = SolverD4()
 
-    solver.test()
 
     in_ = data
     a = solver.solve_a(in_)
@@ -166,3 +237,4 @@ if __name__ == "__main__":
     print(">>>>>>>>>")
     print(f"solution 1 {a}")
     print(f"solution 2 {b}")
+    solver.test()
